@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Audio Waves — каталог{% endblock %}
+{% block content %}
+<section class="hero row g-4 align-items-start mb-4">
+    <div class="col-lg-8">
+        <p class="eyebrow">Premium beat store</p>
+        <h1>Выбери бит для своего релиза</h1>
+        <p class="hero-text">Слушай превью, фильтруй по категориям и цене, сохраняй любимые позиции и собирай свою подборку в одном месте.</p>
+    </div>
+    <div class="col-lg-4 hero-side">
+        <div class="stat-card"><strong>{{ beats|length }}</strong><span>битов в каталоге</span></div>
+        <div class="stat-card"><strong>{{ featured_beats|length }}</strong><span>позиций в топ-подборке</span></div>
+    </div>
+</section>
+
+<section class="featured-grid row g-3 mb-4">
+    {% for beat in featured_beats %}
+        <div class="col-md-4">
+            <a class="featured-card h-100" href="{{ url_for('beat_detail', beat_id=beat.id) }}">
+                <span>{{ beat.category }}</span>
+                <strong>{{ beat.title }}</strong>
+                <small>{{ beat.mood }} · {{ beat.bpm }} BPM · {{ '%.0f'|format(beat.price) }} ₽</small>
+            </a>
+        </div>
+    {% endfor %}
+</section>
+
+<section class="filters panel p-4 mb-4">
+    <form method="get" class="row g-3 filters-form">
+        <div class="col-lg-3 col-md-6"><input class="form-control" type="text" name="search" placeholder="Поиск по названию" value="{{ filters.search }}"></div>
+        <div class="col-lg-2 col-md-6">
+            <select class="form-select" name="category">
+                <option value="">Все категории</option>
+                {% for item in categories %}
+                    <option value="{{ item }}" {% if filters.category == item %}selected{% endif %}>{{ item }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-lg-2 col-md-6">
+            <select class="form-select" name="mood">
+                <option value="">Все настроения</option>
+                {% for item in moods %}
+                    <option value="{{ item }}" {% if filters.mood == item %}selected{% endif %}>{{ item }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-lg-1 col-md-3"><input class="form-control" type="number" step="0.01" name="min_price" placeholder="Цена, ₽ от" value="{{ filters.min_price }}"></div>
+        <div class="col-lg-1 col-md-3"><input class="form-control" type="number" step="0.01" name="max_price" placeholder="Цена, ₽ до" value="{{ filters.max_price }}"></div>
+        <div class="col-lg-2 col-md-6">
+            <select class="form-select" name="sort">
+                <option value="new" {% if filters.sort == 'new' %}selected{% endif %}>Сначала новые</option>
+                <option value="price_asc" {% if filters.sort == 'price_asc' %}selected{% endif %}>Сначала дешевые</option>
+                <option value="price_desc" {% if filters.sort == 'price_desc' %}selected{% endif %}>Сначала дорогие</option>
+                <option value="title" {% if filters.sort == 'title' %}selected{% endif %}>По названию</option>
+            </select>
+        </div>
+        <div class="col-lg-1 col-md-6 d-grid"><button type="submit" class="btn">Найти</button></div>
+    </form>
+</section>
+
+<section class="beats-grid row g-4">
+    {% for beat in beats %}
+        <div class="col-xl-6">
+            <article class="beat-card h-100">
+                <img src="{{ url_for('static', filename='uploads/covers/' + beat.cover_file) if beat.cover_file != 'default-cover.jpg' else url_for('static', filename='default-cover.jpg') }}" alt="{{ beat.title }}">
+                <div class="beat-info">
+                    <div class="beat-head">
+                        <h3>{{ beat.title }}</h3>
+                        <span class="price">{{ '%.0f'|format(beat.price) }} ₽</span>
+                    </div>
+                    <p class="meta">{{ beat.category }} · {{ beat.mood }} · {{ beat.bpm }} BPM · {{ beat.beat_key }}</p>
+                    <p class="desc">{{ beat.description }}</p>
+                    <div class="player-box">
+                        <button type="button" class="play-btn" aria-label="Слушать превью"><span class="play-icon">▶</span><span class="play-label">Слушать превью</span></button>
+                        <audio preload="none" src="{{ url_for('static', filename='uploads/previews/' + beat.preview_file) }}"></audio>
+                    </div>
+                    <div class="actions">
+                        <a class="btn ghost" href="{{ url_for('beat_detail', beat_id=beat.id) }}">Подробнее</a>
+                        {% if current_user.is_authenticated %}
+                            <a class="btn ghost" href="{{ url_for('toggle_favorite', beat_id=beat.id) }}">
+                                {% if beat.id in favorite_ids %}★ В избранном{% else %}☆ В избранное{% endif %}
+                            </a>
+                            <a class="btn" href="{{ url_for('add_to_cart', beat_id=beat.id) }}">В корзину</a>
+                        {% else %}
+                            <a class="btn" href="{{ url_for('login') }}">Войти для покупки</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+        </div>
+    {% else %}
+        <div class="col-12"><div class="empty-box">Ничего не найдено по выбранным фильтрам.</div></div>
+    {% endfor %}
+</section>
+{% endblock %}

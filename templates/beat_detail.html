@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}{{ beat.title }} — Audio Waves{% endblock %}
+{% block content %}
+<section class="detail-grid row g-4 mb-4 align-items-start">
+    <div class="col-lg-5">
+        <img class="detail-cover" src="{{ url_for('static', filename='uploads/covers/' + beat.cover_file) if beat.cover_file != 'default-cover.jpg' else url_for('static', filename='default-cover.jpg') }}" alt="{{ beat.title }}">
+    </div>
+    <div class="col-lg-7">
+        <div class="panel p-4 h-100">
+            <p class="eyebrow">{{ beat.category }}</p>
+            <h1>{{ beat.title }}</h1>
+            <p class="meta">{{ beat.mood }} · {{ beat.bpm }} BPM · {{ beat.beat_key }}</p>
+            <p>{{ beat.description }}</p>
+            <p class="detail-price">{{ '%.0f'|format(beat.price) }} ₽</p>
+            <div class="player-box">
+                <button type="button" class="play-btn" aria-label="Слушать превью"><span class="play-icon">▶</span><span class="play-label">Слушать превью</span></button>
+                <audio preload="none" src="{{ url_for('static', filename='uploads/previews/' + beat.preview_file) }}"></audio>
+            </div>
+            <div class="actions">
+                {% if current_user.is_authenticated %}
+                    <a class="btn ghost" href="{{ url_for('toggle_favorite', beat_id=beat.id) }}">{{ '★ В избранном' if is_favorite else '☆ В избранное' }}</a>
+                    {% if in_cart %}
+                        <a class="btn ghost" href="{{ url_for('profile') }}">Уже в корзине</a>
+                    {% else %}
+                        <a class="btn" href="{{ url_for('add_to_cart', beat_id=beat.id) }}">Добавить в корзину</a>
+                    {% endif %}
+                {% else %}
+                    <a class="btn" href="{{ url_for('login') }}">Войти</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="panel p-4">
+    <h2>Похожие биты</h2>
+    <div class="mini-grid row g-3 mt-1">
+        {% for item in similar_beats %}
+            <div class="col-md-6 col-xl-3"><a class="mini-card h-100" href="{{ url_for('beat_detail', beat_id=item.id) }}">{{ item.title }}<small>{{ item.category }} · {{ '%.0f'|format(item.price) }} ₽</small></a></div>
+        {% else %}
+            <p>Похожих битов пока нет.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

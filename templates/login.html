@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Вход — Audio Waves{% endblock %}
+{% block content %}
+<section class="form-wrap py-4">
+    <form method="post" class="auth-form panel p-4 mx-auto">
+        <h1 class="mb-4">Вход</h1>
+        <input class="form-control" type="text" name="login" placeholder="Email или логин" required>
+        <input class="form-control" type="password" name="password" placeholder="Пароль" required>
+        <label class="checkbox"><input type="checkbox" name="remember"> Запомнить меня</label>
+        <button type="submit" class="btn">Войти</button>
+        <p class="mb-0">Нет аккаунта? <a href="{{ url_for('register') }}">Зарегистрироваться</a></p>
+    </form>
+</section>
+{% endblock %}

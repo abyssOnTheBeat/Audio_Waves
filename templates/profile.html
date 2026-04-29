@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Профиль — Audio Waves{% endblock %}
+{% block content %}
+<section class="profile-grid row g-4">
+    <div class="col-lg-4"><div class="panel p-4 h-100">
+        <h1>{{ current_user.username }}</h1>
+        <p>{{ current_user.email }}</p>
+        <p>Статус: {% if current_user.is_admin %}Администратор{% elif current_user.is_beatmaker %}Битмейкер{% else %}Пользователь{% endif %}</p>
+        <p>Аккаунт создан: {{ current_user.created_at.strftime('%d.%m.%Y') }}</p>
+    </div></div>
+
+    <div class="col-lg-4"><div class="panel p-4 h-100">
+        <h2>Избранные биты</h2>
+        {% for beat in favorites %}
+            <div class="list-item"><span>{{ beat.title }}</span><a href="{{ url_for('beat_detail', beat_id=beat.id) }}">Открыть</a></div>
+        {% else %}
+            <p>Пока ничего не добавлено.</p>
+        {% endfor %}
+    </div></div>
+
+    <div class="col-lg-4"><div class="panel p-4 h-100">
+        <h2>Корзина</h2>
+        {% for beat in cart_items %}
+            <div class="list-item"><span>{{ beat.title }} — {{ '%.0f'|format(beat.price) }} ₽</span><a href="{{ url_for('remove_from_cart', beat_id=beat.id) }}">Удалить</a></div>
+        {% else %}
+            <p>Корзина пока пуста.</p>
+        {% endfor %}
+        <hr>
+        <p><strong>Итого:</strong> {{ '%.0f'|format(cart_total) }} ₽</p>
+        <a class="btn" href="{{ url_for('checkout') }}">Перейти к оформлению</a>
+    </div></div>
+</section>
+
+{% if current_user.is_beatmaker %}
+<section id="beatmaker-tools" class="row g-4 mt-1">
+    <div class="col-lg-5"><div class="panel p-4 h-100">
+        <h2>Загрузка нового бита</h2>
+        <p class="muted">После отправки бит попадет на модерацию администратору и появится в каталоге только после одобрения.</p>
+        <form method="post" action="{{ url_for('beatmaker_upload') }}" enctype="multipart/form-data" class="admin-form mt-3">
+            <input class="form-control" type="text" name="title" placeholder="Название бита" required>
+            <input class="form-control" type="text" name="category" placeholder="Категория" required>
+            <input class="form-control" type="text" name="mood" placeholder="Настроение" required>
+            <input class="form-control" type="number" name="bpm" placeholder="BPM" required>
+            <input class="form-control" type="text" name="beat_key" placeholder="Тональность" required>
+            <input class="form-control" type="number" step="0.01" name="price" placeholder="Цена, ₽" required>
+            <textarea class="form-control" name="description" placeholder="Описание"></textarea>
+            <label>Превью (mp3/wav/ogg/m4a)</label>
+            <input class="form-control" type="file" name="preview" required>
+            <label>Обложка (png/jpg/webp)</label>
+            <input class="form-control" type="file" name="cover">
+            <button type="submit" class="btn">Отправить на модерацию</button>
+        </form>
+    </div></div>
+
+    <div class="col-lg-7"><div class="panel p-4 h-100">
+        <h2>Мои загруженные биты</h2>
+        {% for beat in submitted_beats %}
+            <div class="list-item">
+                <div>
+                    <strong>{{ beat.title }}</strong><br>
+                    <small>{{ beat.category }} · {{ '%.0f'|format(beat.price) }} ₽ · статус: 
+                        {% if beat.status == 'approved' %}одобрен{% elif beat.status == 'pending' %}на модерации{% else %}отклонен{% endif %}
+                    </small>
+                </div>
+                <a href="{{ url_for('beat_detail', beat_id=beat.id) if beat.status == 'approved' else '#' }}">{{ 'Открыть' if beat.status == 'approved' else 'Ожидание' }}</a>
+            </div>
+        {% else %}
+            <p>Вы еще не отправляли биты на модерацию.</p>
+        {% endfor %}
+    </div></div>
+</section>
+{% endif %}
+{% endblock %}

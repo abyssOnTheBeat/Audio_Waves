@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Оформление — Audio Waves{% endblock %}
+{% block content %}
+<section class="panel p-4 narrow mx-auto">
+    <h1>Оформление заказа</h1>
+    {% for beat in items %}
+        <div class="list-item"><span>{{ beat.title }}</span><span>{{ '%.0f'|format(beat.price) }} ₽</span></div>
+    {% endfor %}
+    <hr>
+    <p><strong>Итого:</strong> {{ '%.0f'|format(total) }} ₽</p>
+    <p class="muted">Проверь состав заказа и переходи к подтверждению покупки. При необходимости можно вернуться в каталог и добавить ещё биты.</p>
+</section>
+{% endblock %}

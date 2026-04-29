@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Управление каталогом — Audio Waves{% endblock %}
+{% block content %}
+<section class="admin-grid row g-4">
+    <div class="col-lg-5"><div class="panel p-4 h-100">
+        <h1>Добавить новый бит</h1>
+        <form method="post" enctype="multipart/form-data" class="admin-form mt-3">
+            <input class="form-control" type="text" name="title" placeholder="Название бита" required>
+            <input class="form-control" type="text" name="category" placeholder="Категория" required>
+            <input class="form-control" type="text" name="mood" placeholder="Настроение" required>
+            <input class="form-control" type="number" name="bpm" placeholder="BPM" required>
+            <input class="form-control" type="text" name="beat_key" placeholder="Тональность" required>
+            <input class="form-control" type="number" step="0.01" name="price" placeholder="Цена, ₽" required>
+            <textarea class="form-control" name="description" placeholder="Описание"></textarea>
+            <label>Превью (mp3/wav/ogg/m4a)</label>
+            <input class="form-control" type="file" name="preview" required>
+            <label>Обложка (png/jpg/webp)</label>
+            <input class="form-control" type="file" name="cover">
+            <label class="checkbox"><input type="checkbox" name="is_featured"> Показать в подборке</label>
+            <button type="submit" class="btn">Добавить бит</button>
+        </form>
+    </div></div>
+
+    <div class="col-lg-4"><div class="panel p-4 h-100">
+        <h2>Модерация</h2>
+        {% for beat in pending_beats %}
+            <div class="list-item flex-column align-items-start">
+                <div>
+                    <strong>{{ beat.title }}</strong><br>
+                    <small>{{ beat.category }} · {{ '%.0f'|format(beat.price) }} ₽ · загрузил {{ beat.submitted_by.username if beat.submitted_by else 'неизвестно' }}</small>
+                </div>
+                <div class="actions mt-2">
+                    <a class="btn" href="{{ url_for('moderate_beat', beat_id=beat.id, action='approve') }}">Одобрить</a>
+                    <a class="btn ghost" href="{{ url_for('moderate_beat', beat_id=beat.id, action='reject') }}">Отклонить</a>
+                </div>
+            </div>
+        {% else %}
+            <p>Новых битов на модерации нет.</p>
+        {% endfor %}
+    </div></div>
+
+    <div class="col-lg-3"><div class="panel p-4 h-100">
+        <h2>Пользователи</h2>
+        {% for user in users %}
+            <div class="list-item"><span>{{ user.username }} — {{ user.email }}</span><span>{{ user.role }}</span></div>
+        {% endfor %}
+    </div></div>
+</section>
+
+<section class="panel p-4 mt-4">
+    <h2>Все биты</h2>
+    {% for beat in beats %}
+        <div class="list-item">
+            <span>{{ beat.title }} — {{ beat.category }} — {{ '%.0f'|format(beat.price) }} ₽ — 
+                {% if beat.status == 'approved' %}опубликован{% elif beat.status == 'pending' %}на модерации{% else %}отклонен{% endif %}
+            </span>
+            <a href="{{ url_for('delete_beat', beat_id=beat.id) }}">Удалить</a>
+        </div>
+    {% else %}
+        <p>Битов пока нет.</p>
+    {% endfor %}
+</section>
+{% endblock %}

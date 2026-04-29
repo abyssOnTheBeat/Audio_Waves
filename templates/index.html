@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block title %}Audio Waves — главная{% endblock %}
+{% block content %}
+<section class="landing-hero row g-4 align-items-center mb-4">
+    <div class="col-lg-7">
+        <p class="eyebrow neon">Premium beat market</p>
+        <h1>Современные биты<br>для артистов,<br>которым нужен<br>свой звук</h1>
+        <p class="landing-text">Покупай эксклюзивные и non-exclusive биты в стилях trap, drill, melodic, rage и hip-hop. Быстрый выбор, чистый звук и готовность к релизу.</p>
+        <div class="landing-actions d-flex flex-wrap gap-3 mb-4">
+            <a class="btn hero-btn" href="{{ url_for('catalog') }}">Смотреть каталог</a>
+            <a class="btn ghost hero-btn" href="#music-search">Музыкальный поиск</a>
+        </div>
+        <div class="row g-3 stats-row">
+            <div class="col-md-4">
+                <div class="feature-stat h-100">
+                    <strong>{{ beats_count }}+</strong>
+                    <span>битов в каталоге</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-stat h-100">
+                    <strong>24/7</strong>
+                    <span>доступ к каталогу и заказу</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-stat h-100">
+                    <strong>Новый звук</strong>
+                    <span>подборки, поиск и быстрый просмотр каталога</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="landing-visual">
+            <div class="aw-logo-wrap text-center mb-4">
+                <img class="hero-logo" src="{{ url_for('static', filename='logo.png') }}" alt="Audio Waves logo">
+            </div>
+            {% set top_beat = featured_beats[0] if featured_beats else none %}
+            <div class="hero-track-card mx-auto">
+                <div class="hero-dots"><span></span><span></span><span></span></div>
+                <p class="hero-card-label">Сейчас в топе</p>
+                {% if top_beat %}
+                    <h3>{{ top_beat.title }}</h3>
+                    <p>{{ top_beat.category }} / {{ top_beat.mood }} / {{ top_beat.bpm }} BPM</p>
+                    <div class="hero-wave"></div>
+                    <div class="hero-card-bottom">
+                        <span>Лицензия:<br>от {{ (top_beat.price * 1)|int }} ₽</span>
+                        <a class="play-pill" href="{{ url_for('beat_detail', beat_id=top_beat.id) }}">Слушать</a>
+                    </div>
+                {% else %}
+                    <h3>Neon Streets</h3>
+                    <p>Trap / Dark / 140 BPM</p>
+                    <div class="hero-wave"></div>
+                    <div class="hero-card-bottom">
+                        <span>Лицензия:<br>от 1 990 ₽</span>
+                        <a class="play-pill" href="{{ url_for('catalog') }}">Слушать</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="featured-grid landing-featured row g-3 mb-4">
+    {% for beat in featured_beats %}
+        <div class="col-md-4">
+            <a class="featured-card h-100" href="{{ url_for('beat_detail', beat_id=beat.id) }}">
+                <span>{{ beat.category }}</span>
+                <strong>{{ beat.title }}</strong>
+                <small>{{ beat.mood }} · {{ beat.bpm }} BPM · {{ '%.0f'|format(beat.price) }} ₽</small>
+            </a>
+        </div>
+    {% endfor %}
+</section>
+
+<section id="music-search" class="panel p-4 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+        <div>
+            <p class="eyebrow mb-2">Музыкальный поиск</p>
+            <h2 class="mb-2">Найди артистов и треки по настроению</h2>
+            <p class="muted mb-0">Введи имя артиста или трека и сразу посмотри подходящие результаты прямо на сайте.</p>
+        </div>
+        <div class="api-links d-flex flex-column gap-2">
+            <a class="btn ghost" href="{{ url_for('catalog') }}">Перейти в каталог</a>
+            <a class="btn ghost" href="{{ url_for('api_music_search') }}?term=drake" target="_blank">Открыть результаты поиска</a>
+        </div>
+    </div>
+    <div class="row g-3 align-items-end">
+        <div class="col-md-9">
+            <label class="form-label">Музыкальный запрос</label>
+            <input id="musicSearchInput" class="form-control" type="text" placeholder="Например: Travis Scott или Blinding Lights">
+        </div>
+        <div class="col-md-3 d-grid">
+            <button id="musicSearchBtn" class="btn" type="button">Найти</button>
+        </div>
+    </div>
+    <div id="musicSearchStatus" class="muted mt-3">Нажми «Найти», чтобы получить результаты.</div>
+    <div id="musicSearchResults" class="row g-3 mt-1"></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function runMusicSearch() {
+        const input = document.getElementById('musicSearchInput');
+        const status = document.getElementById('musicSearchStatus');
+        const results = document.getElementById('musicSearchResults');
+        const term = input.value.trim();
+        if (!term) {
+            status.textContent = 'Сначала введи имя артиста или трека.';
+            results.innerHTML = '';
+            return;
+        }
+        status.textContent = 'Загрузка результатов...';
+        results.innerHTML = '';
+        try {
+            const response = await fetch(`/api/music/search?term=${encodeURIComponent(term)}`);
+            const data = await response.json();
+            if (!data.items || data.items.length === 0) {
+                status.textContent = 'Ничего не найдено.';
+                return;
+            }
+            status.textContent = `Найдено результатов: ${data.count}`;
+            results.innerHTML = data.items.map(item => `
+                <div class="col-md-6 col-xl-4">
+                    <div class="api-card h-100">
+                        ${item.artwork_url ? `<img class="api-cover" src="${item.artwork_url}" alt="${item.track_name}">` : ''}
+                        <div class="api-card-body">
+                            <h5>${item.track_name}</h5>
+                            <p class="mb-1">${item.artist_name}</p>
+                            <small>${item.collection_name} · ${item.genre}</small>
+                            <div class="mt-3 d-flex gap-2 flex-wrap">
+                                ${item.track_url ? `<a class="btn ghost btn-sm" target="_blank" href="${item.track_url}">Открыть в iTunes</a>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            status.textContent = 'Не удалось получить результаты поиска. Попробуй ещё раз.';
+        }
+    }
+
+    document.getElementById('musicSearchBtn').addEventListener('click', runMusicSearch);
+    document.getElementById('musicSearchInput').addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            runMusicSearch();
+        }
+    });
+</script>
+{% endblock %}
