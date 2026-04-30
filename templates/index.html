@@ -8,6 +8,7 @@
         <p class="landing-text">Покупай эксклюзивные и non-exclusive биты в стилях trap, drill, melodic, rage и hip-hop. Быстрый выбор, чистый звук и готовность к релизу.</p>
         <div class="landing-actions d-flex flex-wrap gap-3 mb-4">
             <a class="btn hero-btn" href="{{ url_for('catalog') }}">Смотреть каталог</a>
+            <a class="btn ghost hero-btn" href="#about">О нас</a>
             <a class="btn ghost hero-btn" href="#music-search">Музыкальный поиск</a>
         </div>
         <div class="row g-3 stats-row">
@@ -58,6 +59,35 @@
                     </div>
                 {% endif %}
             </div>
+        </div>
+    </div>
+</section>
+
+<section id="about" class="why-us-grid row g-3 mb-4">
+    <div class="col-lg-7">
+        <div class="panel why-card h-100 p-4">
+            <h2>О нас</h2>
+            <p class="muted">
+                Audio Waves — онлайн-платформа для размещения, прослушивания и продажи битов.
+                Сервис предназначен для музыкантов, артистов и битмейкеров, которым нужен
+                удобный инструмент для публикации, выбора и продвижения музыкального материала.
+            </p>
+            <p class="muted mb-0">
+                На платформе пользователи могут просматривать каталог битов, слушать превью,
+                сохранять понравившиеся работы, а битмейкеры — загружать свои композиции
+                с последующей модерацией администратором.
+            </p>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="panel why-card h-100 p-4">
+            <h3>Контактная информация</h3>
+            <ul class="why-list mb-0">
+                <li><strong>Юридический адрес:</strong> 125047, г. Москва, ул. 1-я Тверская-Ямская, д. 23, стр. 1</li>
+                <li><strong>Email:</strong> leonidgalkin2006@gmail.com</li>
+                <li><strong>Направление деятельности:</strong> цифровая платформа для размещения и продажи музыкального контента</li>
+            </ul>
         </div>
     </div>
 </section>
